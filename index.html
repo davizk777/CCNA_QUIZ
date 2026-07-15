@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulado CCNA - Modo Celular</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #111;
+            color: #f0f0f0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Barra de topo com progresso */
+        header {
+            background: #1e1e1e;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+        }
+
+        .titulo {
+            font-size: 1em;
+            font-weight: bold;
+        }
+
+        .contador {
+            font-size: 0.9em;
+            color: #0d6efd;
+            font-weight: bold;
+        }
+
+        /* Área do conteúdo da questão */
+        .conteudo-container {
+            flex: 1;
+            width: 100%;
+            background: #111;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        /* Esconde as páginas que não estão ativas */
+        .pagina-questao {
+            display: none;
+        }
+
+        .pagina-questao.ativa {
+            display: block;
+        }
+
+        /* Painel de controle inferior */
+        .controles {
+            background: #1e1e1e;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            border-top: 1px solid #333;
+        }
+
+        .botoes-feedback {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 14px;
+            font-size: 1em;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            color: white;
+            transition: 0.1s;
+        }
+
+        .btn-erro {
+            background: #dc3545;
+        }
+
+        .btn-acerto {
+            background: #198754;
+        }
+
+        .botoes-navegacao {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .btn-nav {
+            background: #333;
+            color: #ccc;
+            padding: 10px 20px;
+            font-size: 0.9em;
+            border: 1px solid #444;
+            border-radius: 6px;
+            flex: 1;
+            cursor: pointer;
+        }
+
+        .btn-nav:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .score-board {
+            font-size: 0.85em;
+            color: #aaa;
+            text-align: center;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="titulo" id="nome-pagina">Questão 1</div>
+    <div class="contador" id="progresso">1 de 3</div>
+</header>
+
+<div class="conteudo-container">
+
+    <div class="pagina-questao ativa" id="q-1">
+        <h2>Questão da Página 1</h2>
+        <p style="margin-top: 15px; color: #ccc;">
+            Insira aqui o texto, imagem ou código correspondente à sua primeira página de estudos.
+        </p>
+    </div>
+
+    <div class="pagina-questao" id="q-2">
+        <h2>Questão da Página 2</h2>
+        <p style="margin-top: 15px; color: #ccc;">
+            Insira aqui o conteúdo correspondente à página 2 do seu material.
+        </p>
+    </div>
+
+    <div class="pagina-questao" id="q-3">
+        <h2>Questão da Página 3 (Exemplo de IPv6)</h2>
+        <p style="margin-top: 15px; color: #ccc;">
+            Insira aqui o conteúdo correspondente à página 3 do seu material.
+        </p>
+    </div>
+
+</div>
+
+<div class="controles">
+    <div class="botoes-feedback">
+        <button class="btn btn-erro" onclick="marcarResultado('errou')">Errei ❌</button>
+        <button class="btn btn-acerto" onclick="marcarResultado('acertou')">Acertei ✅</button>
+    </div>
+
+    <div class="botoes-navegacao">
+        <button class="btn-nav" id="btn-ant" onclick="navegar(-1)">← Anterior</button>
+        <button class="btn-nav" id="btn-prox" onclick="navegar(1)">Próxima →</button>
+    </div>
+
+    <div class="score-board" id="placar">
+        Acertos: 0 | Erros: 0
+    </div>
+</div>
+
+<script>
+    // Defina aqui a quantidade de páginas que você colocou no HTML
+    const totalPaginas = 3; 
+    let paginaAtual = 1;
+
+    let acertos = 0;
+    let erros = 0;
+    const historico = {};
+
+    function atualizarTela() {
+        // Remove a classe ativa de todas as questões e adiciona apenas na atual
+        document.querySelectorAll('.pagina-questao').forEach(div => {
+            div.classList.remove('ativa');
+        });
+        
+        const questaoAtiva = document.getElementById(`q-${paginaAtual}`);
+        if (questaoAtiva) {
+            questaoAtiva.classList.add('ativa');
+        }
+
+        // Atualiza textos do cabeçalho
+        document.getElementById("nome-pagina").innerText = `Questão ${paginaAtual}`;
+        document.getElementById("progresso").innerText = `${paginaAtual} de ${totalPaginas}`;
+
+        // Controla botões de navegação
+        document.getElementById("btn-ant").disabled = (paginaAtual === 1);
+        document.getElementById("btn-prox").disabled = (paginaAtual === totalPaginas);
+
+        atualizarPlacar();
+    }
+
+    function marcarResultado(status) {
+        if (historico[paginaAtual]) {
+            if (historico[paginaAtual] === 'acertou') acertos--;
+            if (historico[paginaAtual] === 'errou') erros--;
+        }
+
+        historico[paginaAtual] = status;
+        if (status === 'acertou') acertos++;
+        if (status === 'errou') erros++;
+
+        atualizarPlacar();
+
+        if (paginaAtual < totalPaginas) {
+            setTimeout(() => {
+                navegar(1);
+            }, 600);
+        } else {
+            alert(`Fim do Simulado! \nTotal de Acertos: ${acertos}\nTotal de Erros: ${erros}`);
+        }
+    }
+
+    function atualizarPlacar() {
+        document.getElementById("placar").innerText = `Acertos: ${acertos} | Erros: ${erros}`;
+    }
+
+    function navegar(direcao) {
+        const novaPagina = paginaAtual + direcao;
+        if (novaPagina >= 1 && novaPagina <= totalPaginas) {
+            paginaAtual = novaPagina;
+            atualizarTela();
+        }
+    }
+
+    atualizarTela();
+</script>
+
+</body>
+</html>
